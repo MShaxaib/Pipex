@@ -13,6 +13,15 @@ pipe()
             |--close end[1]
             |--execve(cmd2)
 
+
+
+
+
+
+
+
+
+
 // each cmd needs a stdin (input) and returns an output (to stdout)
    
     infile                                             outfile
@@ -28,6 +37,15 @@ as stdin for cmd1                                 as stdout for cmd2
           to end[1]                          output to cmd2
        (end[1] becomes                      (end[0] becomes 
         cmd1 stdout)                           cmd2 stdin)
+
+
+
+
+
+
+
+
+
 
 
 
