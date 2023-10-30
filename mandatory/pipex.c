@@ -3,49 +3,161 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 18:39:47 by mshazaib          #+#    #+#             */
-/*   Updated: 2023/10/17 21:07:49 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/10/30 09:44:53 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "../includes/pipex.h"
 
-int main()
+
+char *find_path(char **envp)
 {
-    pid_t	pid;
-    int		fd[2];
-    char	buffer[13];
+   while (*envp)
+{
+    if (ft_strncmp("PATH=", *envp, 5) == 0)
+        return (*envp + 5);
+    envp++;
+}
+return (NULL);
 
-    if (pipe	(fd) == -1)
-    {
-        perror	("pipe");
-        exit	(EXIT_FAILURE);
-    }
+    
+}
 
-    pid = fork();
-    if (pid == -1)
-    {
-        perror("fork");
-        exit  (EXIT_FAILURE);
-    }
+void	close_pipes(t_pipex *pipex)
+{
+	close(pipex->tube[0]);
+	close(pipex->tube[1]);
+}
 
-    if (pid == 0)
+/*
+This function is a simplified way to 
+resolve command names to their full paths,
+similar to how the shell would search directories
+in the PATH environment variable to find the location of a command.
+*/
+
+static char *get_cmd(char **paths, char *cmd)
+{
+    char *tmp;
+    char *command;
+    
+    while(*paths)
     {
-        close(fd[0]); // close the read end of the pipe
-        write(fd[1], "Hello parent!", 13);
-        close(fd[1]); // close the write end of the pipe
-        exit (EXIT_SUCCESS);
+//construct command path
+        tmp = ft_strjoin(*paths, "/"); // directory
+        command = ft_strjoin(tmp, cmd); // cmd
+        free(tmp);
+//check command existance
+        if(access(command, 0) == 0)
+            return(command);
+
+        free(command);
+        paths++;
     }
-    else
+    return(NULL);
+}
+
+void first_child(t_pipex pipex, char *argv[], char *envp[])
+{
+//redirection of stdout to pipe write end
+    dup2(pipex.tube[1], 1);
+    close(pipex.tube[0]);
+//redirection of stdin from infile
+    dup2(pipex.infile, 0);
+//parsing and exec
+    pipex.cmd_args = ft_split(argv[2], ' ');
+    pipex.cmd = get_cmd(pipex.cmd_paths, pipex.cmd_args[0]);
+    if(!pipex.cmd)
     {
-        close (fd[1]); // close the write end of the pipe
-        read  (fd[0], buffer, 13);
-        close (fd[0]); // close the read end of the pipe
-        printf("Message from child: '%s'\n", buffer);
-        exit  (EXIT_SUCCESS);
+        child_free(&pipex);
+        printf("error in cmd execution in child 1");
+        exit(1);
     }
+    execve(pipex.cmd, pipex.cmd_args, envp);
+}
+
+void second_child(t_pipex pipex, char *argv[], char *envp[])
+{
+//redirection of stdin from pipe read end
+    dup2(pipex.tube[0], 0);
+    close(pipex.tube[1]);
+//redirection of stdout to output file
+    dup2(pipex.outfile, 1);
+//parsing and exec
+    pipex.cmd_args = ft_split(argv[3], ' ');
+    pipex.cmd = get_cmd(pipex.cmd_paths, pipex.cmd_args[0]);
+    if(!pipex.cmd)
+    {
+        child_free(&pipex);
+        printf("error in cmd execution in child 2");
+        exit(1);
+    }
+    execve(pipex.cmd, pipex.cmd_args, envp);
+}
+
+/*
+these two functions set up the two sides of a Unix-like pipe,
+with the first_child reading from an input file and writing to a pipe,
+and the second_child reading from that pipe and writing to an output file.
+It's essentially emulating the behavior of the Unix | (pipe) operator between two
+commands
+
+*/
+
+
+
+int main (int argc, char *argv[], char *envp[])
+{
+    t_pipex pipex;
+
+
+// Checks
+    if(argc != 5)
+    {
+        printf("Not enough arguments");
+        return (1);
+    }
+    pipex.infile = open (argv[1], O_RDONLY);
+    if(pipex.infile < 0)
+    {
+        printf("File Error \n");
+        return (1);
+    }
+    pipex.outfile = open(argv[argc - 1], O_TRUNC | O_CREAT | O_RDWR, 0000644);
+    if(pipex.outfile < 0)
+    {
+        printf("Outfile error");
+        return (1);
+    }
+//crearting the pipe
+    if(pipe(pipex.tube) < 0)
+    {
+        perror("Pipe error");
+        return (1);
+    }
+//finding path
+    pipex.paths = find_path(envp);
+    pipex.cmd_paths = ft_split(pipex.paths, ':');
+//make child
+    pipex.pid1 = fork();
+    if(pipex.pid1 == 0)
+        first_child(pipex, argv, envp);
+    pipex.pid2 = fork();
+    if(pipex.pid2 == 0)
+        second_child(pipex,argv,envp);
+    close_pipes(&pipex);
+    waitpid(pipex.pid1, NULL, 0);
+    waitpid(pipex.pid2, NULL, 0);
+    
+//cleanup
+    parent_free(&pipex);
+    return(0);
+    
+    
+
 }
 
 
@@ -124,7 +236,25 @@ can write 512 bytes at a time but can read only 1 byte at a time
 
 fork() ---> no idea wtf is this
 
+
+// each cmd needs a stdin (input) and returns an output (to stdout)
+   
+    infile                                             outfile
+as stdin for cmd1                                 as stdout for cmd2            
+       |                        PIPE                        ↑
+       |           |---------------------------|            |
+       ↓             |                       |              |
+      cmd1   -->    end[1]       ↔       end[0]   -->     cmd2           
+                     |                       |
+            cmd1   |---------------------------|  end[0]
+           output                             reads end[1]
+         is written                          and sends cmd1
+          to end[1]                          output to cmd2
+       (end[1] becomes                      (end[0] becomes 
+        cmd1 stdout)                           cmd2 stdin)
+
 */
+
 
 
 
