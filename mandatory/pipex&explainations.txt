@@ -1,0 +1,334 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    pipex&explainations.txt                            :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: codespace <codespace@student.42.fr>        +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/10/17 18:39:47 by mshazaib          #+#    #+#              #
+#    Updated: 2023/10/31 13:52:19 by codespace        ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+#include "../includes/pipex.h"
+
+
+char *find_path(char **envp)
+{
+   while (*envp)
+{
+    if (ft_strncmp("PATH=", *envp, 5) == 0)
+        return (*envp + 5);
+    envp++;
+}
+return (NULL);
+
+    
+}
+
+void	close_pipes(t_pipex *pipex)
+{
+	close(pipex->tube[0]);
+	close(pipex->tube[1]);
+}
+
+/*
+This function is a simplified way to 
+resolve command names to their full paths,
+similar to how the shell would search directories
+in the PATH environment variable to find the location of a command.
+*/
+
+static char *get_cmd(char **paths, char *cmd)
+{
+    char *tmp;
+    char *command;
+    
+    while(*paths)
+    {
+//construct command path
+        tmp = ft_strjoin(*paths, "/"); // directory
+        command = ft_strjoin(tmp, cmd); // cmd
+        free(tmp);
+//check command existance
+        if(access(command, 0) == 0)
+            return(command);
+
+        free(command);
+        paths++;
+    }
+    return(NULL);
+}
+
+void first_child(t_pipex pipex, char *argv[], char *envp[])
+{
+//redirection of stdout to pipe write end
+    dup2(pipex.tube[1], 1);
+    close(pipex.tube[0]);
+//redirection of stdin from infile
+    dup2(pipex.infile, 0);
+//parsing and exec
+    pipex.cmd_args = ft_split(argv[2], ' ');
+    pipex.cmd = get_cmd(pipex.cmd_paths, pipex.cmd_args[0]);
+    if(!pipex.cmd)
+    {
+        child_free(&pipex);
+        printf("error in cmd execution in child 1");
+        exit(1);
+    }
+    execve(pipex.cmd, pipex.cmd_args, envp);
+}
+
+void second_child(t_pipex pipex, char *argv[], char *envp[])
+{
+//redirection of stdin from pipe read end
+    dup2(pipex.tube[0], 0);
+    close(pipex.tube[1]);
+//redirection of stdout to output file
+    dup2(pipex.outfile, 1);
+//parsing and exec
+    pipex.cmd_args = ft_split(argv[3], ' ');
+    pipex.cmd = get_cmd(pipex.cmd_paths, pipex.cmd_args[0]);
+    if(!pipex.cmd)
+    {
+        child_free(&pipex);
+        printf("error in cmd execution in child 2");
+        exit(1);
+    }
+    execve(pipex.cmd, pipex.cmd_args, envp);
+}
+
+/*
+these two functions set up the two sides of a Unix-like pipe,
+with the first_child reading from an input file and writing to a pipe,
+and the second_child reading from that pipe and writing to an output file.
+It's essentially emulating the behavior of the Unix | (pipe) operator between two
+commands
+
+*/
+
+
+
+int main (int argc, char *argv[], char *envp[])
+{
+    t_pipex pipex;
+
+
+// Checks
+    if(argc != 5)
+    {
+        printf("Not enough arguments");
+        return (1);
+    }
+    pipex.infile = open (argv[1], O_RDONLY);
+    if(pipex.infile < 0)
+    {
+        printf("File Error \n");
+        return (1);
+    }
+    pipex.outfile = open(argv[argc - 1], O_TRUNC | O_CREAT | O_RDWR, 0000644);
+    if(pipex.outfile < 0)
+    {
+        printf("Outfile error");
+        return (1);
+    }
+//crearting the pipe
+    if(pipe(pipex.tube) < 0)
+    {
+        perror("Pipe error");
+        return (1);
+    }
+//finding path
+    pipex.paths = find_path(envp);
+    pipex.cmd_paths = ft_split(pipex.paths, ':');
+//make child
+    pipex.pid1 = fork();
+    if(pipex.pid1 == 0)
+        first_child(pipex, argv, envp);
+    pipex.pid2 = fork();
+    if(pipex.pid2 == 0)
+        second_child(pipex,argv,envp);
+    close_pipes(&pipex);
+    waitpid(pipex.pid1, NULL, 0);
+    waitpid(pipex.pid2, NULL, 0);
+    
+//cleanup
+    parent_free(&pipex);
+    return(0);
+    
+    
+
+}
+
+
+/*
+
+
+
+           ██╗      ██████╗ ██████╗ ███████╗    ██████╗ ███████╗ ██████╗ ██╗   ██╗██╗██████╗ ███╗   ███╗███████╗███╗   ██╗████████╗███████╗
+           ╚██╗     ██╔══██╗██╔══██╗██╔════╝    ██╔══██╗██╔════╝██╔═══██╗██║   ██║██║██╔══██╗████╗ ████║██╔════╝████╗  ██║╚══██╔══╝██╔════╝
+█████╗█████╗╚██╗    ██████╔╝██║  ██║█████╗      ██████╔╝█████╗  ██║   ██║██║   ██║██║██████╔╝██╔████╔██║█████╗  ██╔██╗ ██║   ██║   ███████╗
+╚════╝╚════╝██╔╝    ██╔═══╝ ██║  ██║██╔══╝      ██╔══██╗██╔══╝  ██║▄▄ ██║██║   ██║██║██╔══██╗██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║
+           ██╔╝     ██║     ██████╔╝██║         ██║  ██║███████╗╚██████╔╝╚██████╔╝██║██║  ██║██║ ╚═╝ ██║███████╗██║ ╚████║   ██║   ███████║
+           ╚═╝      ╚═╝     ╚═════╝ ╚═╝         ╚═╝  ╚═╝╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
+
+
+
+
+
+Arguments : :file1 cmd1 cmd2 file2
+
+External functs
+
+link for more info (https://dev.to/herbievine/42-a-comprehensive-guide-to-pipex-5165)
+
+open,			to topen files
+close,			to close the files
+read,			to read the files
+write,			to print
+malloc,			memory alloc
+free,			freeing the allocated memory
+perror,			print error
+strerror,		returns pointer to the error message from the array
+access,     	checks if the file or the dir specified by path exists and can be accessed with the file access permission given by amode
+dup,        	creates a copy of the file descriptor (uses the lowest numbered unused fd, they both refer to the same open fd )
+dup2,       	same as dup ^ but can specify the number for the fd, 
+execve,     	executes the program pointed by the filename/file path (env variables)
+exit,       	terminates the process and closses any open fd's and child process
+fork,       	splits into child, child is the duplicate of the parent to the point of split, process identifier (PID) are different for each process
+            
+			if the process returns 0 we in the child
+            if the process return 1 we in the parent process
+            we then use wait in the parent to make the child run first, this also prevents it from becoming a zombie
+            link (https://www.youtube.com/watch?v=xVSPv-9x3gk)
+
+pipe,			is a system call that creates a unidirection data channel that can be used for interprocess communication.
+
+
+
+
+unlink      	it elimates the link of a specifiic file or directory from the file system 
+wait,			delay i think
+waitpid			wait for a specific process id to finish
+
+Should run like this:			./pipex file1 cmd1 cmd2 file2
+Must take  arguments 			file1 and file2 (file name) cmd1 and cmd2 (shell commands with their parameters)
+
+
+
+           ██╗      ███╗   ██╗ ██████╗ ████████╗███████╗███████╗
+           ╚██╗     ████╗  ██║██╔═══██╗╚══██╔══╝██╔════╝██╔════╝
+█████╗█████╗╚██╗    ██╔██╗ ██║██║   ██║   ██║   █████╗  ███████╗
+╚════╝╚════╝██╔╝    ██║╚██╗██║██║   ██║   ██║   ██╔══╝  ╚════██║
+           ██╔╝     ██║ ╚████║╚██████╔╝   ██║   ███████╗███████║
+           ╚═╝      ╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝
+
+
+
+
+parents and child process connected to each other through a pipe
+fd[0] for the read end of the pipe
+fd[1] for the write end of the pipe
+
+behaves as FIFO (first in first out)
+
+can write 512 bytes at a time but can read only 1 byte at a time 
+
+fork() ---> no idea wtf is this
+
+
+// each cmd needs a stdin (input) and returns an output (to stdout)
+   
+    infile                                             outfile
+as stdin for cmd1                                 as stdout for cmd2            
+       |                        PIPE                        ↑
+       |           |---------------------------|            |
+       ↓             |                       |              |
+      cmd1   -->    end[1]       ↔       end[0]   -->     cmd2           
+                     |                       |
+            cmd1   |---------------------------|  end[0]
+           output                             reads end[1]
+         is written                          and sends cmd1
+          to end[1]                          output to cmd2
+       (end[1] becomes                      (end[0] becomes 
+        cmd1 stdout)                           cmd2 stdin)
+
+*/
+
+
+
+
+
+//██████╗ ███████╗███████╗██████╗ ███████╗███╗   ██╗ ██████╗███████╗     ██████╗ ██████╗ ██████╗ ███████╗███████╗
+//██╔══██╗██╔════╝██╔════╝██╔══██╗██╔════╝████╗  ██║██╔════╝██╔════╝    ██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝
+//██████╔╝█████╗  █████╗  ██████╔╝█████╗  ██╔██╗ ██║██║     █████╗      ██║     ██║   ██║██║  ██║█████╗  ███████╗
+//██╔══██╗██╔══╝  ██╔══╝  ██╔══██╗██╔══╝  ██║╚██╗██║██║     ██╔══╝      ██║     ██║   ██║██║  ██║██╔══╝  ╚════██║
+//██║  ██║███████╗██║     ██║  ██║███████╗██║ ╚████║╚██████╗███████╗    ╚██████╗╚██████╔╝██████╔╝███████╗███████║
+//╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝     ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝
+
+// int main(int argc, char *argv[]) 
+// {
+//   int status;
+//   int fds[2];                                 // an array that will hold two file descriptors
+//   size_t i;
+//   pid_t pid = fork();                         // create child process that is a clone of the parent
+//   i = 0;
+//   pipe(fds);                                  // populates fds with two file descriptors
+//   if (pid == 0)
+//   {                             // if pid == 0, then this is the child process
+//     dup2(fds[0], STDIN_FILENO);                         //In the child process, this line duplicates the file descriptor fds[0] to file descriptor 0, This means that any data written to STDIN in the child process will actually come from the pipe.
+//     close(fds[0]);                                      // file descriptor no longer needed in child since stdin is a copy
+//     close(fds[1]);                                      // file descriptor unused in child
+//     char *argv[] = {(char *)"sort", NULL};              // create argument vector specifies that the child process to use sort
+//     if (execvp(argv[0], argv) < 0) exit(0);             // execute the sort command in the child process using execvp . if it cant returns with 0
+//   } 
+// // if we reach here, we are in parent process
+//   close(fds[0]);                                         // file descriptor unused in parent
+//   const char *words[] = {"pear", "peach", "apple"};      // write input to the writable file descriptor so it can be read in from child:
+//   size_t numwords = sizeof(words)/sizeof(words[0]);      //calculate the numbers of words used in the array
+//     while(i < numwords)
+//       {
+//         dprintf(fds[1], "%s\n", words[i]);               //use a loop to write each word to the write end of the pipe so that the child process can read them
+//         i++;
+//       }
+//   close(fds[1]);                                        //this signals the end of the input data to the child process
+//   pid_t wpid = waitpid(pid, &status, 0);                // wait for child to finish before exiting
+//   return wpid == pid && WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+// }
+
+
+// int main()
+// {
+//     int fd[2];
+//     pid_t pid;
+//     char buffer[13];
+
+//     if (pipe(fd) == -1)
+//     {
+//         perror("pipe");
+//         exit(EXIT_FAILURE);
+//     }
+
+//     pid = fork();
+//     if (pid == -1)
+//     {
+//         perror("fork");
+//         exit(EXIT_FAILURE);
+//     }
+
+//     if (pid == 0)
+//     {
+//         close(fd[0]); // close the read end of the pipe
+//         write(fd[1], "Hello parent!", 13);
+//         close(fd[1]); // close the write end of the pipe
+//         exit(EXIT_SUCCESS);
+//     }
+//     else
+//     {
+//         close(fd[1]); // close the write end of the pipe
+//         read(fd[0], buffer, 13);
+//         close(fd[0]); // close the read end of the pipe
+//         printf("Message from child: '%s'\n", buffer);
+//         exit(EXIT_SUCCESS);
+//     }
+// }

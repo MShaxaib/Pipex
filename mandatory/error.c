@@ -1,42 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strdup.c                                        :+:      :+:    :+:   */
+/*   error.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/30 08:44:18 by codespace         #+#    #+#             */
-/*   Updated: 2023/10/31 13:54:38 by codespace        ###   ########.fr       */
+/*   Created: 2023/10/31 13:39:09 by codespace         #+#    #+#             */
+/*   Updated: 2023/10/31 13:56:48 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
 
-char	*ft_strdup(const char *src)
+int	msg(char *err)
 {
-	char	*cp;
-	size_t	i;
-
-	i = 0;
-	cp = (char *)malloc(ft_strlen(src) + 1);
-	if (!cp)
-		return (NULL);
-	while (src[i])
-	{
-		cp[i] = src[i];
-		i++;
-	}
-	cp[i] = '\0';
-	return (cp);
+	write(2, err, ft_strlen(err));
+	return (1);
 }
 
-size_t	ft_strlen(const char *s)
+void	msg_error(char *err)
 {
-	size_t	i;
-
-	i = 0;
-	if (s)
-		while (s[i])
-			i++;
-	return (i);
+	perror(err);
+	exit(1);
 }
