@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   childs.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:44:40 by codespace         #+#    #+#             */
-/*   Updated: 2023/10/31 13:51:17 by codespace        ###   ########.fr       */
+/*   Updated: 2023/11/18 17:49:22 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ void	first_child(t_pipex pipex, char *argv[], char *envp[])
 		printf("error in cmd execution in child 1");
 		exit(1);
 	}
+	printf("Executing command: %s\n", pipex.cmd);
 	execve(pipex.cmd, pipex.cmd_args, envp);
 }
 
@@ -59,5 +60,6 @@ void	second_child(t_pipex pipex, char *argv[], char *envp[])
 		printf("error in cmd execution in child 2");
 		exit(1);
 	}
+	printf("Executing command: %s\n", pipex.cmd);
 	execve(pipex.cmd, pipex.cmd_args, envp);
 }

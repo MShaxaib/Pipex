@@ -5,7 +5,7 @@ FLAGS		=	-Wall -Wextra -Werror
 RM			=	rm -rf
 
 #FILES AND PATH
-HEADER_SRCS	=	pipex.h pipex_bonus.h
+HEADER_SRCS	=	pipex.h 
 HEADER_DIR	=	includes/
 HEADER		=	$(addprefix $(HEADER_DIR), $(HEADER_SRCS))
 
@@ -14,10 +14,6 @@ MPATH_DIR	=	mandatory/
 MPATH		=	$(addprefix $(MPATH_DIR), $(MPATH_SRCS))
 OBJ_M		=	$(MPATH:.c=.o)
 
-BPATH_SRCS	=	pipex_bonus.c error_bonus.c here_doc_bonus.c\
-				files_bonus.c free_bonus.c child_bonus.c
-BPATH_DIR	=	bonus/
-BPATH		=	$(addprefix $(BPATH_DIR), $(BPATH_SRCS))
 OBJ_B		=	$(BPATH:.c=.o)
 
 FUNC_SRCS	=	ft_strncmp.c ft_strdup.c ft_split.c ft_strjoin.c
@@ -35,9 +31,9 @@ $(NAME):		$(OBJ_F) $(OBJ_M)
 
 all:			$(NAME)
 
-bonus:			$(OBJ_F) $(OBJ_B)
-				@$(CC) $(OBJ_F) $(OBJ_B) -o $(NAME)
-				@echo -e "$(GREEN)$(NAME) created!$(DEFAULT)"
+# bonus:			$(OBJ_F) $(OBJ_B)
+# 				@$(CC) $(OBJ_F) $(OBJ_B) -o $(NAME)
+# 				@echo -e "$(GREEN)$(NAME) created!$(DEFAULT)"
 
 clean:
 				@$(RM) $(OBJ_M)
