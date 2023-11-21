@@ -6,13 +6,13 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:44:40 by codespace         #+#    #+#             */
-/*   Updated: 2023/11/18 17:49:22 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/11/18 18:43:37 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex.h"
 
-static char	*get_cmd(char **paths, char *cmd)
+char	*get_cmd(char **paths, char *cmd)
 {
 	char	*tmp;
 	char	*command;
@@ -43,8 +43,8 @@ void	first_child(t_pipex pipex, char *argv[], char *envp[])
 		printf("error in cmd execution in child 1");
 		exit(1);
 	}
-	printf("Executing command: %s\n", pipex.cmd);
 	execve(pipex.cmd, pipex.cmd_args, envp);
+	perror("execve");
 }
 
 void	second_child(t_pipex pipex, char *argv[], char *envp[])
@@ -60,6 +60,6 @@ void	second_child(t_pipex pipex, char *argv[], char *envp[])
 		printf("error in cmd execution in child 2");
 		exit(1);
 	}
-	printf("Executing command: %s\n", pipex.cmd);
 	execve(pipex.cmd, pipex.cmd_args, envp);
+	perror("execve");
 }

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    pipex&explainations.txt                            :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: codespace <codespace@student.42.fr>        +#+  +:+       +#+         #
+#    By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/17 18:39:47 by mshazaib          #+#    #+#              #
-#    Updated: 2023/10/31 13:52:19 by codespace        ###   ########.fr        #
+#    Updated: 2023/11/21 15:14:07 by mshazaib         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -332,3 +332,27 @@ as stdin for cmd1                                 as stdout for cmd2
 //         exit(EXIT_SUCCESS);
 //     }
 // }
+
+Parent Process
+    |
+    v
+  [pipe]
+    |
+    v
+first_child: CMD1
+    |   \
+    |    \
+    |     \
+    v      \
+  [pipe]   dup2(pipex.infile, 0)
+    |       (redirect standard input to infile)
+    v
+second_child: CMD2
+    |   \
+    |    \
+    |     \
+    v      \
+  [pipe]   dup2(pipex.outfile, 1)
+    |       (redirect standard output to outfile)
+    v
+  (output to shell)
