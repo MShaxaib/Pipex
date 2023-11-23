@@ -31,10 +31,6 @@ $(NAME):		$(OBJ_F) $(OBJ_M)
 
 all:			$(NAME)
 
-# bonus:			$(OBJ_F) $(OBJ_B)
-# 				@$(CC) $(OBJ_F) $(OBJ_B) -o $(NAME)
-# 				@echo -e "$(GREEN)$(NAME) created!$(DEFAULT)"
-
 clean:
 				@$(RM) $(OBJ_M)
 				@$(RM) $(OBJ_F)

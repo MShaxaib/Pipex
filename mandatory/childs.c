@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:44:40 by codespace         #+#    #+#             */
-/*   Updated: 2023/11/18 18:43:37 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/11/23 14:06:55 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	first_child(t_pipex pipex, char *argv[], char *envp[])
 	if (!pipex.cmd)
 	{
 		child_free(&pipex);
-		printf("error in cmd execution in child 1");
+		printf("error in cmd execution in first child");
 		exit(1);
 	}
 	execve(pipex.cmd, pipex.cmd_args, envp);
@@ -57,7 +57,7 @@ void	second_child(t_pipex pipex, char *argv[], char *envp[])
 	if (!pipex.cmd)
 	{
 		child_free(&pipex);
-		printf("error in cmd execution in child 2");
+		printf("error in cmd execution in second child");
 		exit(1);
 	}
 	execve(pipex.cmd, pipex.cmd_args, envp);
