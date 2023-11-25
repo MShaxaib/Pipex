@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 09:02:11 by codespace         #+#    #+#             */
-/*   Updated: 2023/11/22 18:28:16 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/11/25 21:37:51 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,12 @@ void	parent_free(t_pipex *pipex)
 	i = 0;
 	close(pipex->infile);
 	close(pipex->outfile);
-	while (pipex->cmd_paths[i])
-	{
-		free(pipex->cmd_paths[i]);
-		i++;
-	}
+	if (pipex->cmd_paths)
+		while (pipex->cmd_paths[i])
+		{
+			free(pipex->cmd_paths[i]);
+			i++;
+		}
 	free(pipex->cmd_paths);
 }
 

@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 18:39:49 by mshazaib          #+#    #+#             */
-/*   Updated: 2023/11/18 18:43:44 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/11/25 20:47:04 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,12 @@
 # include <sys/wait.h>
 # include <unistd.h>
 
-# define ERR_INFILE "Infile"
-# define ERR_OUTFILE "Outfile"
+# define EXITWITHFAILURECODE 127
+# define ERR_INFILE "Error in the Infile"
+# define ERR_OUTFILE "Error in the Outfile"
 # define ERR_INPUT "Invalid number of arguments.\n"
-# define ERR_PIPE "Pipe"
-# define ERR_CMD "Command not found\n"
+# define ERR_PIPE "Error in the Pipe"
+# define ERR_CMD "Command not found"
 
 typedef struct s_pipex
 {
@@ -47,7 +48,7 @@ void		parent_free(t_pipex *pipex);
 void		child_free(t_pipex *pipex);
 
 /* error.c */
-void		msg_error(char *err);
+void		msg_error();
 int			msg(char *err);
 
 /* funcions */
