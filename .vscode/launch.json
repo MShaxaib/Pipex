@@ -5,35 +5,22 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "(gdb) Launch",
+			"name": "(lldb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/pipex",
-			"args": ["infile.txt" ,"grep hello", "wc -l", "outfile.txt"],
+			"args": ["../infile.txt", "grep hello", "wc", "../outfile.txt"],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
-			"environment": [
+			"environment": 
+			[
 				{
-
-				"name": "PATH",
-        		"value": "/usr/bin/env:${env:PATH}"
-				}
+					"name": "PATH",
+					"value": "/usr/bin/env:${env:PATH}"
+					}
 			],
-
 			"externalConsole": false,
-			"MIMode": "gdb",
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				},
-				{
-					"description": "Set Disassembly Flavor to Intel",
-					"text": "-gdb-set disassembly-flavor intel",
-					"ignoreFailures": true
-				}
-			]
+			"MIMode": "lldb"
 		}
 
 	]

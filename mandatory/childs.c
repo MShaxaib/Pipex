@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:44:40 by codespace         #+#    #+#             */
-/*   Updated: 2023/11/25 21:19:49 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/12/05 18:48:59 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,13 @@ void	first_child(t_pipex pipex, char *argv[], char *envp[])
 	if (!pipex.cmd)
 	{
 		child_free(&pipex);
-		fprintf(stderr, "Error executing command:\n");
-		exit(EXITWITHFAILURECODE);
+		fprintf(stderr, "pipex: %s: command not found\n", argv[2]);
+		exit(127);
 	}
-	execve(pipex.cmd, pipex.cmd_args, envp);
+	else
+	{
+		execve(pipex.cmd, pipex.cmd_args, envp);
+	}
 }
 
 void	second_child(t_pipex pipex, char *argv[], char *envp[])
@@ -56,8 +59,11 @@ void	second_child(t_pipex pipex, char *argv[], char *envp[])
 	if (!pipex.cmd)
 	{
 		child_free(&pipex);
-		fprintf(stderr, "Error executing command:\n");
-		exit(EXITWITHFAILURECODE);
+		fprintf(stderr, "pipex: %s: command not found\n", argv[3]);
+		exit(127);
 	}
-	execve(pipex.cmd, pipex.cmd_args, envp);
+	else
+	{
+		execve(pipex.cmd, pipex.cmd_args, envp);
+	}
 }

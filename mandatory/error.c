@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:39:09 by codespace         #+#    #+#             */
-/*   Updated: 2023/11/25 20:43:31 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/12/05 17:58:03 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,10 @@
 
 int	msg(char *err)
 {
-	write(2, err, ft_strlen(err));
-	return (1);
+	fprintf(stderr, "%s", err);
+	exit(127);
 }
-
-// void	msg_error()
+// void	msg_error(void)
 // {
 // 	fprintf(stderr, "Error executing command:\n");
 // 	exit(2);
