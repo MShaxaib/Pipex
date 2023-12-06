@@ -6,7 +6,7 @@
 /*   By: mshazaib <mshazaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 18:39:49 by mshazaib          #+#    #+#             */
-/*   Updated: 2023/12/05 17:56:27 by mshazaib         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:58:34 by mshazaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ void		parent_free(t_pipex *pipex);
 void		child_free(t_pipex *pipex);
 
 /* error.c */
-// void		msg_error();
 int			msg(char *err);
 
 /* funcions */

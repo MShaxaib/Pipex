@@ -9,14 +9,14 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/pipex",
-			"args": ["../infile.txt", "grep hello", "wc", "../outfile.txt"],
+			"args": ["../infile.txt", "grep hello", "adsdjagds", "../outfile.txt"],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
 			"environment": 
 			[
 				{
 					"name": "PATH",
-					"value": "/usr/bin/env:${env:PATH}"
+					"value": "${env:PATH}"
 					}
 			],
 			"externalConsole": false,
