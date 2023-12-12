@@ -19,6 +19,8 @@
 # include <string.h>
 # include <sys/wait.h>
 # include <unistd.h>
+#include <stdbool.h>
+
 
 # define EXITWITHFAILURECODE 127
 # define ERR_INFILE "Error in the Infile"
@@ -43,7 +45,6 @@ typedef struct s_pipex
 
 void		first_child(t_pipex pipex, char *argv[], char *envp[]);
 void		second_child(t_pipex pipex, char *argv[], char *envp[]);
-
 /* free.c */
 void		parent_free(t_pipex *pipex);
 void		child_free(t_pipex *pipex);
